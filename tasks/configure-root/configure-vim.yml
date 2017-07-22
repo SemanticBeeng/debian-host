@@ -1,0 +1,31 @@
+---
+# tasks file for configure-root/configure-vim
+- name: Editor | Install Vi IMproved
+  include_role:
+    name: toolbox
+    tasks_from: install-packages
+  vars:
+    packages:
+      - vim-nox
+
+- name: Editor | Uninstall vim-tiny
+  apt:
+    name: vim-tiny
+    autoremove: yes
+    state: absent
+
+- name: Install Vim from .dotfiles
+  file:
+    src: /root/.dotfiles/vimrc
+    dest: /root/.vimrc
+    state: link
+    force: true
+
+- name: Editor | Install Vundle
+  git:
+    accept_hostkey: yes
+    repo: https://github.com/VundleVim/Vundle.vim.git
+    dest: /root/.vim.bundles/Vundle.vim
+
+- name: Editor | Initialize Vi IMproved
+  shell: vim -i NONE -c PluginInstall -c quitall

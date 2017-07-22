@@ -1,0 +1,6 @@
+---
+# tasks file for configure-bash
+- name: Shell | Initialize Bash environment
+  copy:
+    src: bash/bashrc
+    dest: /root/.bashrc

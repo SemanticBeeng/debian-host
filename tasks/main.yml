@@ -1,2 +1,15 @@
 ---
 # tasks file for debian-host
+- include_role:
+    name: toolbox
+    tasks_from: update-system
+
+- include_role:
+    name: toolbox
+    tasks_from: install-packages
+
+- include_role:
+    name: debian-host
+    tasks_from: set-locale
+
+- include: "{{ role_path }}/tasks/configure-root/main.yml"
