@@ -12,4 +12,12 @@
     name: debian-host
     tasks_from: set-locale
 
+- include_role:
+    name: debian-host
+    tasks_from: configure-user
+  with_items: "{{ users }}"
+  loop_control:
+    loop_var: user
+  when: users is defined
+
 - include: "{{ role_path }}/tasks/configure-root/main.yml"

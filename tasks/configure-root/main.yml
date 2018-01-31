@@ -1,21 +1,16 @@
 ---
 # tasks file for debian-host/configure-root
-- name: Add authorized SSH keys
-  authorized_key:
-    user: root
-    state: present
-    key: "{{ item }}"
-    key_options: ''
-  with_file:
-    - public_keys/itinerix
-    - public_keys/asterix
-    - public_keys/zone0
+#- name: Clone dotfiles
+#  git:
+#    accept_hostkey: yes
+#    repo: https://forge.famille-blondy.fr/niko/dotfiles.git
+#    dest: /root/.dotfiles
 
-- name: Clone dotfiles
-  git:
-    accept_hostkey: yes
-    repo: http://forge.vulpecula.net/niko/dotfiles.git
-    dest: /root/.dotfiles
+- name: Set fresh password for root user
+  user:
+    name: root
+    password: "{{ password }}"
+
 
 - name: Configure "{{ shell }}" as shell
   include: "{{ role_path }}/tasks/configure-root/configure-{{ shell }}.yml"

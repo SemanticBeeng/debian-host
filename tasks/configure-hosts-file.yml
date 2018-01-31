@@ -1,0 +1,9 @@
+---
+# tasks file for debian-host/configure-hosts
+- name: Update /etc/hosts file
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ host.name }} {{ host.name }}.{{ host.domain }}$'
+    line: "{{ host.address }} {{ host.name }} {{ host.name }}.{{ host.domain }}"
+    state: present
+

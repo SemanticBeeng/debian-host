@@ -1,38 +1,9 @@
 ---
 # tasks file for configure-root/configure-git
-- name: Git | Configure username
-  git_config:
-    name: user.name
-    value: Administrator
-    scope: global
+- name: VCS | Initialize Git environment
+  file:
+    src: /root/.dotfiles/gitconfig
+    dest: /root/.gitconfig
+    state: link
+    force: true
 
-- name: Git | Configure email
-  git_config:
-    name: user.email
-    value: admin@famille-blondy.fr
-    scope: global
-
-- name: Git | Configure 'vim' as editor
-  git_config:
-    name: core.editor
-    value: vim
-    scope: system
-
-- name: Git | Configure colors
-  git_config:
-    name: "color.{{ color }}"
-    value: auto
-    scope: system
-  with_items:
-    - status
-    - branch
-    - interactive
-    - diff
-  loop_control:
-    loop_var: color
-
-- name: Git | Configure push mode
-  git_config:
-    name: push.default
-    value: simple
-    scope: system
