@@ -1,0 +1,39 @@
+---
+# tasks file for configure-users/configure-vim
+- name: "[{{ user.name }}] Editor | Install Vi IMproved"
+  include_role:
+    name: toolbox
+    tasks_from: install-packages
+  vars:
+    packages:
+      - vim-nox
+
+- name: "[{{ user.name }}] Editor | Uninstall vim-tiny"
+  apt:
+    name: vim-tiny
+    autoremove: yes
+    state: absent
+
+- name: "[{{ user.name }}] Shell | Check for resources/users/{{ user.name }}/vimrc"
+  local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/vimrc"
+  register: stat_user_vimrc
+
+- name: "[{{ user.name }}] Install Vim configuration"
+  copy:
+    src: "{{ playbook_dir }}/resources/users/{{ user.name }}/vimrc"
+    dest: "{{ user.home }}/.vimrc"
+    force: true
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+  when: stat_user_vimrc.stat.exists == true
+
+- name: "[{{ user.name }}] Editor | Install Vundle"
+  git:
+    accept_hostkey: yes
+    repo: https://github.com/VundleVim/Vundle.vim.git
+    dest: "{{ user.home }}/.vim.bundles/Vundle.vim"
+  when: user.vundle is defined and user.vundle == true
+
+- name: "[{{ user.name }}] Editor | Initialize Vi IMproved"
+  shell: vim -i NONE -c PluginInstall -c quitall
+  when: user.vundle is defined and user.vundle == true

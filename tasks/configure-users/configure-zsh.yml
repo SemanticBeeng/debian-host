@@ -1,0 +1,57 @@
+---
+# tasks file for configure-users/configure-zsh
+- name: "[{{ user.name }}] Shell | Install ZSH"
+  include_role:
+    name: toolbox
+    tasks_from: install-packages
+  vars:
+    packages:
+      - zsh
+
+- name:  "[{{ user.name }}] Shell | Install Oh My Zsh"
+  git:
+    accept_hostkey: yes
+    repo: git://github.com/robbyrussell/oh-my-zsh.git
+    dest: /usr/local/share/oh-my-zsh
+  when: user.ohmyzsh is defined and user.ohmyzsh == true
+
+- name:  "[{{ user.name }}] Configure .zshenv file"
+  lineinfile:
+    path: "{{ user.home }}/.zshenv"
+    line: 'ZSH=/usr/local/share/oh-my-zsh'
+    create: true
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    state: present
+  when: user.ohmyzsh is defined and user.ohmyzsh == true
+
+- name: "[{{ user.name }}] Shell | Check for resources/users/{{ user.name }}/zshrc"
+  local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/zshrc"
+  register: stat_user_zshrc
+
+- name:  "[{{ user.name }}] Shell | Initialize ZSH environment"
+  copy:
+    src: "{{ playbook_dir }}/resources/users/{{ user.name }}/zshrc"
+    dest: "{{ user.home }}/.zshrc"
+    force: true
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+  when: stat_user_zshrc.stat.exists == true
+
+- name: "[{{ user.name }}] Shell | Check for resources/users/{{ user.name }}/functions"
+  local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/functions"
+  register: stat_user_functions
+
+- name:  "[{{ user.name }}] Shell | Get user ZSH functions"
+  copy:
+    src: "{{ playbook_dir }}/resources/users/{{ user.name }}/functions/"
+    dest: "{{ user.home }}/.functions.zsh"
+    force: true
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+  when: stat_user_functions.stat.exists == true
+
+- name:  "[{{ user.name }}] Shell | Set ZSH as shell"
+  user:
+    name: "{{ user.name }}"
+    shell: /usr/bin/zsh

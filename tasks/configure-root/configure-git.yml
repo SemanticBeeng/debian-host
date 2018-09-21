@@ -1,9 +1,0 @@
----
-# tasks file for configure-root/configure-git
-- name: VCS | Initialize Git environment
-  file:
-    src: /root/.dotfiles/gitconfig
-    dest: /root/.gitconfig
-    state: link
-    force: true
-

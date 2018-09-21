@@ -1,0 +1,15 @@
+---
+# tasks file for configure-users/configure-git
+- name: "[{{ user.name }}] Shell | Check for resources/users/{{ user.name }}/gitconfig"
+  local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/gitconfig"
+  register: stat_user_gitconfig
+
+- name: "[{{ user.name }}] VCS | Initialize Git environment"
+  copy:
+    src: "{{ playbook_dir }}/resources/users/{{ user.name }}/gitconfig"
+    dest: "{{ user.home }}/.gitconfig"
+    force: true
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+  when: stat_user_gitconfig.stat.exists == true
+

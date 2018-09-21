@@ -1,0 +1,54 @@
+---
+# tasks file for debian-host/configure-users
+- name: "[{{ user.name }}] Configure user"
+  user:
+    name: "{{ user.name }}"
+    comment: "{{ user.gecos }}"
+    home: "{{ user.home }}"
+
+- name: "[{{ user.name }}] Set password"
+  user:
+    name: "{{ user.name }}"
+    password: "{{ user.password }}"
+  when: user.password is defined
+
+- name: "[{{ user.name }}] Set sudo"
+  user:
+    name: "{{ user.name }}"
+    groups: sudo
+    append: true
+  when: user.sudo is defined and user.sudo
+
+- name: "[{{ user.name }}] Add authorized keys"
+  authorized_key:
+    user: "{{ user.name }}"
+    state: present
+    key: "{{ item }}"
+  with_items: "{{ user.authorized_keys }}"
+  when: user.authorized_keys is defined
+
+- name: "[{{ user.name }}] Configure {{ user.shell }} as shell"
+  include_tasks: "{{ role_path }}/tasks/configure-users/configure-{{ user.shell }}.yml"
+  when: user.shell is defined
+
+- name: "[{{ user.name }}] Configure {{ user.vcs }} as VCS"
+  include_tasks: "{{ role_path }}/tasks/configure-users/configure-{{ user.vcs }}.yml"
+  when: user.vcs is defined
+
+- name: "[{{ user.name }}] Configure {{ user.editor }} as editor"
+  include_tasks: "{{ role_path }}/tasks/configure-users/configure-{{ user.editor }}.yml"
+  when: user.editor is defined
+
+- name: "[{{ user.name }}] Check for resources/users/{{ user.name }}/bin"
+  local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/bin"
+  register: stat_user_bin
+
+- name:  "[{{ user.name }}] Install binaries"
+  copy:
+    src: "{{ playbook_dir }}/resources/users/{{ user.name }}/bin/"
+    dest: "{{ user.home }}/bin"
+    force: true
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: preserve
+  when: stat_user_bin.stat.exists == true

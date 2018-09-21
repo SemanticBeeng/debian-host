@@ -1,0 +1,14 @@
+---
+# tasks file for configure-users/configure-bash
+- name: "[{{ user.name }}] Shell | Check for resources/users/{{ user.name }}/bashrc"
+  local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/bashrc"
+  register: stat_user_bashrc
+
+- name: "[{{ user.name }}] VCS | Initialize Bash environment"
+  copy:
+    src: "{{ playbook_dir }}/resources/users/{{ user.name }}/bashrc"
+    dest: "{{ user.home }}/.bashrc"
+    force: true
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+  when: stat_user_bashrc.stat.exists == true

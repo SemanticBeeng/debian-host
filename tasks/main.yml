@@ -1,23 +1,30 @@
 ---
 # tasks file for debian-host
-- include_role:
+# Upgrade system
+- name: Run toolbox/update-system
+  include_role:
     name: toolbox
     tasks_from: update-system
 
-- include_role:
+# Install default packages
+- name: Run toolbox/install-packages
+  include_role:
     name: toolbox
     tasks_from: install-packages
+  vars:
+    packages: "{{ default_packages|default([]) }} + {{ host_packages|default([]) }}"
 
-- include_role:
+# Configure locales
+- name: Run debian-host/set-locale
+  include_role:
     name: debian-host
     tasks_from: set-locale
 
-- include_role:
+# Configure users
+- name: Run debian-host/configure-users
+  include_role:
     name: debian-host
-    tasks_from: configure-user
-  with_items: "{{ users }}"
+    tasks_from: configure-users
+  with_items: "{{ default_users|default([]) }} + {{ users|default([]) }}"
   loop_control:
     loop_var: user
-  when: users is defined
-
-- include: "{{ role_path }}/tasks/configure-root/main.yml"
