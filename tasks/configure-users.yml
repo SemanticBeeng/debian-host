@@ -17,7 +17,7 @@
     name: "{{ user.name }}"
     groups: sudo
     append: true
-  when: user.sudo is defined and user.sudo
+  when: user.sudo is defined and user.sudo == true
 
 - name: "[{{ user.name }}] Add authorized keys"
   authorized_key:
