@@ -1,7 +1,7 @@
 debian-host
 ===========
 
-Initialize and configure a debian system
+Initialize and configure a Debian system
 
 Requirements
 ------------
@@ -10,19 +10,6 @@ This role requires Ansible 2.3 or higher.
 
 Role Variables
 --------------
-
-None
-
-Dependencies
-------------
-
-This role depends on roles
-
-* toolbox
-
-
-Example Playbook
-----------------
 
     # Global variables
     # Default users list
@@ -73,6 +60,16 @@ Example Playbook
     packages:
         - inetutils-ping
 
+Dependencies
+------------
+
+This role depends on roles
+
+* toolbox
+
+Example Playbook
+----------------
+
     # On main playbook
     - hosts: pve01
       become: True
@@ -83,7 +80,6 @@ Example Playbook
     - include_role:
         name: debian-host
 
-
 License
 -------
 
@@ -93,5 +89,3 @@ Author Information
 ------------------
 
 Niko <niko@vulpecula.fr>
-
-
