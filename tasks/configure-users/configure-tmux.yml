@@ -1,0 +1,22 @@
+---
+# tasks file for configure-users/configure-trmux
+- name: "[{{ user.name }}] Tmux | Install packages"
+  include_role:
+    name: toolbox
+    tasks_from: install-packages
+  vars:
+    packages:
+      - tmux
+
+- name: "[{{ user.name }}] Tmux | Check for resources/users/{{ user.name }}/tmux.conf"
+  local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/tmux.conf"
+  register: stat_user_tmux
+
+- name: "[{{ user.name }}] Tmux | Install user configuration"
+  copy:
+    src: "{{ playbook_dir }}/resources/users/{{ user.name }}/tmux.conf"
+    dest: "{{ user.home }}/.tmux.conf"
+    force: true
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+  when: stat_user_tmux.stat.exists == true

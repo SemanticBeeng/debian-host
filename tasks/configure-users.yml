@@ -39,6 +39,10 @@
   include_tasks: "{{ role_path }}/tasks/configure-users/configure-{{ user.editor }}.yml"
   when: user.editor is defined
 
+- name: "[{{ user.name }}] Configure Tmux"
+  include_tasks: "{{ role_path }}/tasks/configure-users/configure-tmux.yml"
+  when: user.tmux is defined and user.tmux == true
+
 - name: "[{{ user.name }}] Check for resources/users/{{ user.name }}/bin"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/bin"
   register: stat_user_bin

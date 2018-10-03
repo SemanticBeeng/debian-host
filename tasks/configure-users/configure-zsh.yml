@@ -1,6 +1,6 @@
 ---
 # tasks file for configure-users/configure-zsh
-- name: "[{{ user.name }}] Shell | Install ZSH"
+- name: "[{{ user.name }}] Shell:zsh | Install packages"
   include_role:
     name: toolbox
     tasks_from: install-packages
@@ -8,14 +8,14 @@
     packages:
       - zsh
 
-- name:  "[{{ user.name }}] Shell | Install Oh My Zsh"
+- name:  "[{{ user.name }}] Shell:zsh | Install Oh My Zsh"
   git:
     accept_hostkey: yes
     repo: git://github.com/robbyrussell/oh-my-zsh.git
     dest: /usr/local/share/oh-my-zsh
   when: user.ohmyzsh is defined and user.ohmyzsh == true
 
-- name:  "[{{ user.name }}] Configure .zshenv file"
+- name:  "[{{ user.name }}] Shell:zsh | Configure Oh My Zsh in .zshenv file"
   lineinfile:
     path: "{{ user.home }}/.zshenv"
     line: 'ZSH=/usr/local/share/oh-my-zsh'
@@ -25,11 +25,11 @@
     state: present
   when: user.ohmyzsh is defined and user.ohmyzsh == true
 
-- name: "[{{ user.name }}] Shell | Check for resources/users/{{ user.name }}/zshrc"
+- name: "[{{ user.name }}] Shell:zsh | Check for resources/users/{{ user.name }}/zshrc"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/zshrc"
   register: stat_user_zshrc
 
-- name:  "[{{ user.name }}] Shell | Initialize ZSH environment"
+- name:  "[{{ user.name }}] Shell:zsh | Install user configuration"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/zshrc"
     dest: "{{ user.home }}/.zshrc"
@@ -38,20 +38,20 @@
     group: "{{ user.name }}"
   when: stat_user_zshrc.stat.exists == true
 
-- name: "[{{ user.name }}] Shell | Check for resources/users/{{ user.name }}/functions"
+- name: "[{{ user.name }}] Shell:zsh | Check for resources/users/{{ user.name }}/functions"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/functions"
   register: stat_user_functions
 
-- name:  "[{{ user.name }}] Shell | Get user ZSH functions"
+- name:  "[{{ user.name }}] Shell:zsh | Install user functions"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/functions/"
-    dest: "{{ user.home }}/.functions.zsh"
+    dest: "{{ user.home }}/.zsh.functions"
     force: true
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
   when: stat_user_functions.stat.exists == true
 
-- name:  "[{{ user.name }}] Shell | Set ZSH as shell"
+- name:  "[{{ user.name }}] Shell:zsh | Set ZSH as user shell"
   user:
     name: "{{ user.name }}"
     shell: /usr/bin/zsh

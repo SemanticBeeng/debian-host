@@ -1,6 +1,6 @@
 ---
 # tasks file for configure-users/configure-vim
-- name: "[{{ user.name }}] Editor | Install Vi IMproved"
+- name: "[{{ user.name }}] Editor:vim | Install packages"
   include_role:
     name: toolbox
     tasks_from: install-packages
@@ -8,17 +8,17 @@
     packages:
       - vim-nox
 
-- name: "[{{ user.name }}] Editor | Uninstall vim-tiny"
+- name: "[{{ user.name }}] Editor:vim | Uninstall useless package vim-tiny"
   apt:
     name: vim-tiny
     autoremove: yes
     state: absent
 
-- name: "[{{ user.name }}] Shell | Check for resources/users/{{ user.name }}/vimrc"
+- name: "[{{ user.name }}] Editor:vim | Check for resources/users/{{ user.name }}/vimrc"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/vimrc"
   register: stat_user_vimrc
 
-- name: "[{{ user.name }}] Install Vim configuration"
+- name: "[{{ user.name }}] Editor:vim | Install user configuration"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/vimrc"
     dest: "{{ user.home }}/.vimrc"
@@ -27,7 +27,7 @@
     group: "{{ user.name }}"
   when: stat_user_vimrc.stat.exists == true
 
-- name: "[{{ user.name }}] Editor | Install Vundle"
+- name: "[{{ user.name }}] Editor:vim | Install Vundle for Vim"
   git:
     accept_hostkey: yes
     repo: https://github.com/VundleVim/Vundle.vim.git
