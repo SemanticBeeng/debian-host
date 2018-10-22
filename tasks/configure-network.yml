@@ -1,0 +1,17 @@
+---
+# tasks file for debian-host/configure-network
+- name : "[configure-network] Install bridge-utils package"
+  include_role:
+    name: toolbox
+    tasks_from: install-packages
+  vars:
+    packages:
+      - bridge-utils
+  when: type == 'bridge' in network_interfaces
+
+- name: "[configure-network] Apply /network/interfaces configuration"
+  template:
+    src: interfaces.j2
+    dest: /etc/network/interfaces
+    backup: yes
+    trim_blocks: yes

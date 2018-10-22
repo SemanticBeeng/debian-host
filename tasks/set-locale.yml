@@ -1,6 +1,0 @@
----
-# tasks file for debian-host/set-locale
-- name: Set locale "{{ locale | default ('fr_FR.UTF-8')}}"
-  locale_gen:
-    name: "{{ locale | default ('fr_FR.UTF-8') }}"
-    state: present

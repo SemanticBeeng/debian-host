@@ -1,0 +1,43 @@
+---
+# tasks file for debian-host/configure-disk/configure-partition-ext4
+- name: Create "{{ device.name }}{{ partition.index }}" partition
+  parted:
+    device: "{{ device.name }}"
+    number: "{{ partition.index }}"
+    state: present
+    unit: MB
+    part_start: "{{ partition.start }}"
+    part_end: "{{ partition.end }}"
+  when: create_partition | default (true) == true
+
+- name: Stat swap on "{{ device.name }}{{ partition.index }}"
+  shell: "blkid -s TYPE -o value {{ device.name }}{{ partition.index }}"
+  ignore_errors: yes
+  register: stat_swap
+
+- name: Check if swap is already activated
+  shell: swapon --noheadings --show=name
+  register: swapon
+
+- name: dump
+  debug:
+    var: swapon
+
+# Create swap
+- name: Create swap fs on "{{ device.name }}{{ partition.index }}"
+  shell: "mkswap {{ device.name }}{{ partition.index }}"
+  when: stat_swap.stdout == ''
+
+- name: Activate swap
+  shell: "swapon {{ device.name }}{{ partition.index }}"
+  when: swapon.stdout == ""
+
+- name: Add swapfile to /etc/fstab
+  mount:
+    name: none
+    src: "{{ device.name }}{{ partition.index }}"
+    fstype: swap
+    opts: sw
+    passno: 0
+    dump: 0
+    state: present

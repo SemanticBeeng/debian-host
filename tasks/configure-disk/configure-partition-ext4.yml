@@ -1,0 +1,30 @@
+---
+# tasks file for debian-host/configure-disk/configure-partition-ext4
+- name: Create "{{ device.name }}{{ partition.index }}" partition
+  parted:
+    device: "{{ device.name }}"
+    number: "{{ partition.index }}"
+    state: present
+    unit: MB
+    part_start: "{{ partition.start }}"
+    part_end: "{{ partition.end }}"
+  when: create_partition | default (true) == true
+
+# Create filesystem as ext4
+- name: Create filesystem "ext4" on "{{ device.name }}{{ partition.index }}"
+  filesystem:
+    fstype: "ext4"
+    dev: "{{ device.name }}{{ partition.index }}"
+
+# Configure mountpoint
+- include_role:
+    name: debian-host
+    tasks_from: create-mountpoint
+  vars:
+    mountpoint: "{{ partition.mountpoint }}"
+    dev: "{{ device.name }}{{ partition.index }}"
+    fs: "ext4"
+    automount: "{{ partition.automount }}"
+  when: partition.mountpoint is defined and partition.mountpoint | length > 0
+
+

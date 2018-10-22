@@ -1,6 +1,6 @@
 ---
 # tasks file for configure-users/configure-trmux
-- name: "[{{ user.name }}] Tmux | Install packages"
+- name: "[configure-user:{{ user.name }}] Tmux | Install packages"
   include_role:
     name: toolbox
     tasks_from: install-packages
@@ -8,11 +8,11 @@
     packages:
       - tmux
 
-- name: "[{{ user.name }}] Tmux | Check for resources/users/{{ user.name }}/tmux.conf"
+- name: "[configure-user:{{ user.name }}] Tmux | Check for resources/users/{{ user.name }}/tmux.conf"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/tmux.conf"
   register: stat_user_tmux
 
-- name: "[{{ user.name }}] Tmux | Install user configuration"
+- name: "[configure-user:{{ user.name }}] Tmux | Install user configuration"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/tmux.conf"
     dest: "{{ user.home }}/.tmux.conf"
@@ -20,3 +20,10 @@
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
   when: stat_user_tmux.stat.exists == true
+
+- name: "[configure-host] Tweak ssh server to accept TMUX variable"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^AcceptEnv'
+    line: "AcceptEnv LANG LC_* TMUX"
+  notify: restart ssh service

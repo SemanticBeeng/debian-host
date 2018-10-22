@@ -1,30 +1,65 @@
 ---
 # tasks file for debian-host
 # Upgrade system
-- name: Run toolbox/update-system
+- name: Upgrade system
   include_role:
     name: toolbox
     tasks_from: update-system
+  when: todo.upgrade | default (true) == true
 
 # Install default packages
-- name: Run toolbox/install-packages
+- name: Install needed packages
   include_role:
     name: toolbox
     tasks_from: install-packages
   vars:
-    packages: "{{ default_packages|default([]) }} + {{ host_packages|default([]) }}"
+    packages: "{{ default_packages | default ([])}} + {{ host_packages | default ([])}}"
+  when: todo.upgrade | default (true) == true
+
+# Install packages with pip
+- name: Install pip packages
+  include_role:
+    name: toolbox
+    tasks_from: install-pip-packages
+  vars:
+    packages: "{{ default_pip_packages | default ([])}} + {{ host_pip_packages | default ([])}}"
+  when: todo.upgrade | default (true) == true
 
 # Configure locales
-- name: Run debian-host/set-locale
+- name: Configure host
   include_role:
     name: debian-host
-    tasks_from: set-locale
+    tasks_from: configure-host
+  when: todo.standard_configuration | default (true) == true
+
+- name: Configure devices
+  include_role:
+    name: debian-host
+    tasks_from: configure-disk
+  with_items: "{{ disks }}"
+  loop_control:
+    loop_var: disk
+  when: disks is defined and todo.disks | default (true) == true
+
+- name: Configure network
+  include_role:
+    name: debian-host
+    tasks_from: configure-network
+  when: network_interfaces is defined and todo.network | default (true) == true
+
+- name: Configure GlusterFS node
+  include_role:
+    name: debian-host
+    tasks_from: configure-glusterfs
+  when: glusterfs_node is defined
+
 
 # Configure users
 - name: Run debian-host/configure-users
   include_role:
     name: debian-host
     tasks_from: configure-users
-  with_items: "{{ default_users|default([]) }} + {{ users|default([]) }}"
+  with_items: "{{ default_users | default([]) }} + {{ users | default([]) }}"
   loop_control:
     loop_var: user
+  when: todo.users | default (true) == true

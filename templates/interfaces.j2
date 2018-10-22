@@ -1,0 +1,24 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+{% for interface in network_interfaces %}
+auto {{ interface.name }}
+iface {{ interface.name }} inet {{ interface.method }}
+    {% if interface.address is defined %}address {{ interface.address }}{% endif %}
+    {% if interface.netmask is defined %}netmask {{ interface.netmask }}{% endif %}
+    {% if interface.gateway is defined %}gateway {{ interface.gateway }}{% endif %}
+{% if interface.type == 'bridge' %}
+    bridge_ports    dummy0
+    bridge_maxwait  0
+    bridge_stp      off
+    bridge_fd       0
+{% endif %}
+    {% for route in interface.routes | default ([]) %}
+    post-up /sbin/ip route add {{route.network}} via {{ route.gateway }}
+    pre-down /sbin/ip route delete {{route.network}} via {{ route.gateway }}
+    {% endfor %}
+{% endfor %}

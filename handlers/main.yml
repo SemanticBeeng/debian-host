@@ -1,2 +1,12 @@
 ---
 # handlers file for debian-host
+- name: reconfigure cloud-init
+  command: dpkg-reconfigure -f noninteractive cloud-init
+
+- name: update grub configuration
+  command: update-grub2
+
+- name: restart ssh service
+  systemd:
+    name: ssh
+    state: restarted

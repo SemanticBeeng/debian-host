@@ -1,2 +1,12 @@
 ---
 # defaults file for debian-host
+todo: {
+  upgrade: false,
+  standard_configuration: false,
+  cloud_instance: false,
+  users: false,
+  disks: false,
+  network: false
+}
+
+glusterfs_version: 4.1

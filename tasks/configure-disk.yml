@@ -1,0 +1,20 @@
+---
+# tasks file for debian-host/configure-disk
+# vars
+# disk:
+#   name: device name (ex: /dev/sdb)
+#   partitions:
+#     fs: partition file system (ext4, lvm, swap)
+#
+- name: "[configure-disk:{{ disk.name }}] Preparing disk '{{ disk.name }}'"
+  stat:
+    path: "{{ disk.name }}"
+  register: stat_disk
+
+- name: "Run tasks from configure-disk/configure-partition on disk {{ disk.name }}"
+  include_tasks: "{{ role_path }}/tasks/configure-disk/configure-partition-{{ partition.fs }}.yml"
+  with_items: "{{ disk.partitions }}"
+  loop_control:
+    loop_var: partition
+  when: stat_disk.stat.exists == true and disk.partitions is defined
+
