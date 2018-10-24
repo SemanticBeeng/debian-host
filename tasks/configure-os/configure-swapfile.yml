@@ -1,0 +1,46 @@
+# tasks file for debian-host/configure-os/configure-swapfile
+- name: "configure-os : swapfile : get swap information"
+  command: swapon --noheadings --show=name
+  register: swapon
+  tags:
+    - always
+
+- name: "configure-os : swapfile@{{ swap_file.path }} : initialize swap file"
+  command: fallocate -l {{ swap_file.size }} {{ swap_file.path }}
+  when: swapon.stdout == ""
+  tags:
+    - always
+
+- name: "configure-os : swapfile@{{ swap_file.path }} : format swap file"
+  command: mkswap {{ swap_file.path }}
+  when: swapon.stdout == ""
+  tags:
+    - always
+
+- name: "configure-os : swapfile@{{ swap_file.path }} : change swap file permissions"
+  file:
+    path: "{{ swap_file.path }}"
+    owner: root
+    group: root
+    mode: 0600
+  tags:
+    - always
+
+- name: "configure-os : swapfile@{{ swap_file.path }} : activate swap file"
+  command: swapon {{ swap_file.path }}
+  when: swapon.stdout == ""
+  tags:
+    - always
+
+- name: "configure-os : swapfile@{{ swap_file.path }} : add swapfile to /etc/fstab"
+  mount:
+      name: none
+      src: "{{ swap_file.path }}"
+      fstype: swap
+      opts: sw
+      passno: 0
+      dump: 0
+      state: present
+  tags:
+    - always
+

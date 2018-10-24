@@ -1,16 +1,23 @@
 ---
 # tasks file for debian-physical-host/prepare-device/lvm/configure-pool
-- name: "Create volume group '{{ lvm_pool.name }}' on '{{ lvm_pool.device }}'"
+- name: "configure-disk@{{ disk.name }} : lvm@{{ disk.name }}{{ partition.index }}@{{ lvm_pool.name }} : create volume group '{{ lvm_pool.name }}'"
   lvg:
     vg: "{{ lvm_pool.name }}"
     pvs: "{{ lvm_pool.device }}"
     state: present
+  tags:
+    - always
 
 # Configure logical volume
-- name: "Configure pool '{{ lvm_pool.name }}'"
-  include_tasks: "{{ role_path }}/tasks/configure-disk/lvm/configure-volume.yml"
+- name: "debian-host : configure-disk@{{ disk.name }} : lvm@{{ disk.name }}{{ partition.index }}@{{ lvm_pool.name }} : run debian-host/configure-disk/lvm/configure-volume tasks"
+  include_role:
+    name: debian-host
+    tasks_from: configure-disk/lvm/configure-volume
   with_items: "{{ lvm_pool.datasets }}"
   loop_control:
     loop_var: volume
+  tags:
+    - always
+
 
 

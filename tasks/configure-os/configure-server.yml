@@ -1,0 +1,34 @@
+---
+# tasks file for debian-host/configure-os/configure-server
+- name: "configure-os : server : disable predictable network interface names"
+  template:
+    src: grub.j2
+    dest: /etc/default/grub
+  notify: update grub configuration
+  tags:
+    - always
+
+- name: "configure-os : server : set hostname to '{{ hostname | default(inventory_hostname_short) }}'"
+  lineinfile:
+    path: /etc/hostname
+    regexp: "^.*$"
+    line: "{{ hostname }}"
+  when: hostname is defined
+  tags:
+    - always
+
+- name: "configure-os : server : set hostname to '{{ hostname | default(inventory_hostname_short) }}'"
+  lineinfile:
+    path: /etc/hostname
+    regexp: "^.*$"
+    line: "{{ hostname }}"
+  when: hostname is defined
+  tags:
+    - always
+
+- name: "configure-os : server : Apply new hostname"
+  hostname:
+    name: "{{ hostname }}"
+  when: hostname is defined
+  tags:
+    - always

@@ -1,65 +1,68 @@
 ---
 # tasks file for debian-host
 # Upgrade system
-- name: Upgrade system
+- name: "debian-host : run {{ ansible_distribution | lower }}-host/toolbox/update-system tasks"
   include_role:
-    name: toolbox
-    tasks_from: update-system
-  when: todo.upgrade | default (true) == true
+    name: "debian-host"
+    tasks_from: toolbox/update-system
+  tags:
+    - upgrade
 
 # Install default packages
-- name: Install needed packages
+- name: "debian-host : run debian-host/toolbox/install-packages tasks"
   include_role:
-    name: toolbox
-    tasks_from: install-packages
+    name: "debian-host"
+    tasks_from: toolbox/install-packages
   vars:
     packages: "{{ default_packages | default ([])}} + {{ host_packages | default ([])}}"
-  when: todo.upgrade | default (true) == true
+  tags:
+    - upgrade
 
 # Install packages with pip
-- name: Install pip packages
+- name: "debian-host : run toolbox/install-pip-packages tasks"
   include_role:
     name: toolbox
     tasks_from: install-pip-packages
   vars:
     packages: "{{ default_pip_packages | default ([])}} + {{ host_pip_packages | default ([])}}"
-  when: todo.upgrade | default (true) == true
+  tags:
+    - upgrade
 
-# Configure locales
-- name: Configure host
+- name: "debian-host : run debian-host/configure-os tasks"
   include_role:
     name: debian-host
-    tasks_from: configure-host
-  when: todo.standard_configuration | default (true) == true
+    tasks_from: configure-os
+  tags:
+    - os-configuration
 
-- name: Configure devices
+# Configure hard drives
+- name: "debian-host : run debian-host/configure-disk tasks"
   include_role:
     name: debian-host
     tasks_from: configure-disk
   with_items: "{{ disks }}"
   loop_control:
     loop_var: disk
-  when: disks is defined and todo.disks | default (true) == true
+  when: disks is defined
+  tags:
+    - disks-configuration
 
-- name: Configure network
+# Configure network interfaces
+- name: "debian-host : run debian-host/configure-network tasks"
   include_role:
     name: debian-host
     tasks_from: configure-network
-  when: network_interfaces is defined and todo.network | default (true) == true
-
-- name: Configure GlusterFS node
-  include_role:
-    name: debian-host
-    tasks_from: configure-glusterfs
-  when: glusterfs_node is defined
-
+  when: network_interfaces is defined
+  tags:
+    - network-configuration
 
 # Configure users
-- name: Run debian-host/configure-users
+- name: "debian-host : run debian-host/configure-users"
   include_role:
     name: debian-host
     tasks_from: configure-users
   with_items: "{{ default_users | default([]) }} + {{ users | default([]) }}"
   loop_control:
     loop_var: user
-  when: todo.users | default (true) == true
+  tags:
+    - users-configuration

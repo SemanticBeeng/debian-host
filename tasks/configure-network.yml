@@ -1,17 +1,29 @@
 ---
 # tasks file for debian-host/configure-network
-- name : "[configure-network] Install bridge-utils package"
+- name: "configure-network : check if bridge-utils is needed"
+  set_fact:
+    need_bridge: true
+  loop: "{{ network_interfaces }}"
+  loop_control:
+    loop_var: interface
+  when: interface.type == "bridge"
+  tags:
+    - always
+
+- name : "configure-network : run debian-host/toolbox/install-packages tasks"
   include_role:
-    name: toolbox
-    tasks_from: install-packages
+    name: debian-host
+    tasks_from: toolbox/install-packages
   vars:
     packages:
       - bridge-utils
-  when: type == 'bridge' in network_interfaces
+  when: need_bridge | default (false) == true
+  tags:
+    - always
 
-- name: "[configure-network] Apply /network/interfaces configuration"
+- name: "configure-network : apply /network/interfaces configuration"
   template:
     src: interfaces.j2
     dest: /etc/network/interfaces
-    backup: yes
-    trim_blocks: yes
+  tags:
+    - always

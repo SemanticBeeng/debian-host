@@ -6,15 +6,22 @@
 #   partitions:
 #     fs: partition file system (ext4, lvm, swap)
 #
-- name: "[configure-disk:{{ disk.name }}] Preparing disk '{{ disk.name }}'"
+- name: "configure-disk@{{ disk.name }} : preparing disk '{{ disk.name }}'"
   stat:
     path: "{{ disk.name }}"
   register: stat_disk
+  tags:
+    - always
 
-- name: "Run tasks from configure-disk/configure-partition on disk {{ disk.name }}"
-  include_tasks: "{{ role_path }}/tasks/configure-disk/configure-partition-{{ partition.fs }}.yml"
+- name: "debian-host : configure-disk@{{ disk.name }} : run debian-host/configure-disk/configure-partition on disk {{ disk.name }} tasks"
+  include_role:
+    name: debian-host
+    tasks_from: "configure-disk/configure-partition-{{ partition.fs }}"
   with_items: "{{ disk.partitions }}"
   loop_control:
     loop_var: partition
   when: stat_disk.stat.exists == true and disk.partitions is defined
+  tags:
+    - always
+
 

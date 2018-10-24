@@ -1,15 +1,17 @@
 ---
 # tasks file for debian-physical-host/prepare-device/configure-partition-lvm
-- name: Install parted and lvm2 packages
+- name: "debian-host : configure-disk@{{ disk.name }} : lvm : run debian-host/toolbox/install-packages tasks"
   include_role:
-    name: toolbox
-    tasks_from: install-packages
+    name: debian-host
+    tasks_from: toolbox/install-packages
   vars:
     packages:
       - parted
       - lvm2
+  tags:
+    - always
 
-- name: "Create {{ disk.name }}{{ partition.index }} partition"
+- name: "configure-disk@{{ disk.name }} : lvm@{{ disk.name }}{{ partition.index }} : create partition"
   parted:
     device: "{{ disk.name }}"
     number: "{{ partition.index }}"
@@ -18,10 +20,16 @@
     part_start: "{{ partition.start }}"
     part_end: "{{ partition.end }}"
     flags: [ lvm ]
+  tags:
+    - always
 
 # Configure lvm pool
-- name: Run tasks from configure-disk/lvm/configure-pool
-  include_tasks: "{{ role_path }}/tasks/configure-disk/lvm/configure-pool.yml"
+- name: "debian-host : configure-disk@{{ disk.name }} : lvm@{{ disk.name }}{{ partition.index }} : run tasks from configure-disk/lvm/configure-pool"
+  include_role:
+    name: debian-host
+    tasks_from: configure-disk/lvm/configure-pool
   when: lvm_pool is defined
+  tags:
+    - always
 
 

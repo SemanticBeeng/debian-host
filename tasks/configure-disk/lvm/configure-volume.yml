@@ -1,14 +1,18 @@
 ---
 # tasks file for debian-physical-host/prepare-device/lvm/configure-pool
 # Configure logical volume
-- name: "Create logical volume '{{ lvm_pool.name }}/{{ volume.name }}'"
+- name: "configure-disk@{{ disk.name }} : lvm@{{ disk.name }}{{ partition.index }}@{{ lvm_pool.name }}/{{ volume.name }} : create logical volume '{{ lvm_pool.name }}/{{ volume.name }}'"
   lvol:
     vg: "{{ lvm_pool.name }}"
     lv: "{{ volume.name }}"
     size: "{{ volume.size }}"
+  tags:
+    - always
 
-- name: "Create {{ volume.type }} file system on volume {{ volume.name }}"
-  include_tasks: "{{ role_path }}/tasks/configure-disk/configure-partition-{{ volume.type }}.yml"
+- name: "debian-host : configure-disk@{{ disk.name }} : lvm@{{ disk.name }}{{ partition.index }}@{{ lvm_pool.name }}/{{ volume.name }} : run configure-disk/configure-partition-{{ volume.type }} tasks"
+  include_role:
+    name: debian-host
+    tasks_from: "configure-disk/configure-partition-{{ volume.type }}"
   vars:
     create_partition: false
     device:
@@ -18,6 +22,9 @@
       automount: "{{ volume.automount | default (false) }}"
       mountpoint: "{{ volume.mountpoint | default (None)}}"
   when: volume.type is defined
+  tags:
+    - always
+
 
 
 

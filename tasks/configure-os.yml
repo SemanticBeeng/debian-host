@@ -1,0 +1,40 @@
+---
+# tasks file for debian-host/set-locale
+- name: "configure-os : set locale '{{ locale | default ('en_US.UTF-8')}}'"
+  locale_gen:
+    name: "{{ locale | default ('en_US.UTF-8') }}"
+    state: present
+  tags:
+    - always
+
+- name: "debian-host : configure-os : run debian-host/configure-os/configure-{{ type }} tasks"
+  include_role:
+    name: debian-host
+    tasks_from: "configure-os/configure-{{ type }}"
+  tags:
+    - always
+
+- name: "debian-host : configure-os : run debian-host/configure-os/configure-swapfile"
+  include_role:
+    name: debian-host
+    tasks_from: configure-os/configure-swapfile
+  when: swap_file is defined
+  tags:
+    - always
+
+- name: "debian-host : configure-os : run debian-host/create-mountpoint tasks"
+  include_role:
+    name: debian-host
+    tasks_from: create-mountpoint
+  vars:
+    mountpoint: "{{ mp.mountpoint }}"
+    dev: "{{ mp.src }}"
+    fs: "{{ mp.fs }}"
+    automount: "{{ mp.automount }}"
+    opts: "{{ mp.opts | default ('') }}"
+  loop: "{{ mountpoints | default([]) }}"
+  loop_control:
+    loop_var: mp
+  when: mp.fs != 'glusterfs'
+  tags:
+    - always

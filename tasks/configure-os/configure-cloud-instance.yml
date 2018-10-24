@@ -1,0 +1,39 @@
+---
+# tasks file for debian-host/configure-os/configure-cloud-instance
+- name: "configure-os : cloud-instance : disable predictable network interface names"
+  template:
+    src: grub.j2
+    dest: /etc/default/grub
+  notify: update grub configuration
+  tags:
+    - always
+
+- name: "configure-os : cloud-instance : disable resolvconf update by DHCP"
+  copy:
+    src: nodnsupdate
+    dest: /etc/dhcp/dhclient-enter-hooks.d/nodnsupdate
+    mode: u=rwx,g=rx,o=rx
+  tags:
+    - always
+
+- name: "configure-os : cloud-instance : set hostname to '{{ hostname | default(inventory_hostname_short) }}'"
+  lineinfile:
+    path: /etc/hostname
+    regexp: "^.*$"
+    line: "{{ hostname }}"
+  when: hostname is defined
+  tags:
+    - always
+
+- name: "configure-os : cloud-instance : apply new hostname"
+  shell: hostname "{{ hostname }}"
+  when: hostname is defined
+  tags:
+    - always
+
+- name: "configure-os : cloud-instance : configure resolv.conf file"
+  template:
+    dest: /etc/resolv.conf
+    src: resolv.conf.j2
+  tags:
+    - always

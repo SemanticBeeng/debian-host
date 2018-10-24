@@ -1,6 +1,6 @@
 ---
-# tasks file for debian-host/configure-disk/configure-partition-ext4
-- name: Create "{{ device.name }}{{ partition.index }}" partition
+# tasks file for debian-host/configure-disk/configure-partition-swap
+- name: "configure-disk@{{ disk.name }} : swap@{{ device.name }}{{ partition.index }} : create swap partition"
   parted:
     device: "{{ device.name }}"
     number: "{{ partition.index }}"
@@ -9,30 +9,36 @@
     part_start: "{{ partition.start }}"
     part_end: "{{ partition.end }}"
   when: create_partition | default (true) == true
+  tags:
+    - always
 
-- name: Stat swap on "{{ device.name }}{{ partition.index }}"
+- name: "configure-disk@{{ disk.name }} : swap@{{ device.name }}{{ partition.index }} : stat swap"
   shell: "blkid -s TYPE -o value {{ device.name }}{{ partition.index }}"
   ignore_errors: yes
   register: stat_swap
+  tags:
+    - always
 
-- name: Check if swap is already activated
+- name: "configure-disk@{{ disk.name }} : swap@{{ device.name }}{{ partition.index }} : check if swap is already activated"
   shell: swapon --noheadings --show=name
   register: swapon
-
-- name: dump
-  debug:
-    var: swapon
+  tags:
+    - always
 
 # Create swap
-- name: Create swap fs on "{{ device.name }}{{ partition.index }}"
+- name: "configure-disk@{{ disk.name }} : swap@{{ device.name }}{{ partition.index }} : create swap fs"
   shell: "mkswap {{ device.name }}{{ partition.index }}"
   when: stat_swap.stdout == ''
+  tags:
+    - always
 
-- name: Activate swap
+- name: "configure-disk@{{ disk.name }} : swap@{{ device.name }}{{ partition.index }} : activate swap"
   shell: "swapon {{ device.name }}{{ partition.index }}"
   when: swapon.stdout == ""
+  tags:
+    - always
 
-- name: Add swapfile to /etc/fstab
+- name: "configure-disk@{{ disk.name }} : swap@{{ device.name }}{{ partition.index }} : add swapfile to /etc/fstab"
   mount:
     name: none
     src: "{{ device.name }}{{ partition.index }}"
@@ -41,3 +47,5 @@
     passno: 0
     dump: 0
     state: present
+  tags:
+    - always

@@ -1,21 +1,25 @@
 ---
 # tasks file for configure-users/configure-zsh
-- name: "[configure-user:{{ user.name }}] Shell:zsh | Install packages"
+- name: "debian-host : configure-user@{{ user.name }}] : zsh : run debian-host/toolbox/install-packages tasks"
   include_role:
-    name: toolbox
-    tasks_from: install-packages
+    name: debian-host
+    tasks_from: toolbox/install-packages
   vars:
     packages:
       - zsh
+  tags:
+    - always
 
-- name:  "[configure-user:{{ user.name }}] Shell:zsh | Install Oh My Zsh"
+- name:  "configure-user@{{ user.name }}] : zsh : install Oh My Zsh"
   git:
     accept_hostkey: yes
     repo: git://github.com/robbyrussell/oh-my-zsh.git
     dest: /usr/local/share/oh-my-zsh
   when: user.ohmyzsh is defined and user.ohmyzsh == true
+  tags:
+    - always
 
-- name:  "[configure-user:{{ user.name }}] Shell:zsh | Configure Oh My Zsh in .zshenv file"
+- name:  "configure-user@{{ user.name }} : zsh : configure Oh My Zsh in .zshenv file"
   lineinfile:
     path: "{{ user.home }}/.zshenv"
     line: 'ZSH=/usr/local/share/oh-my-zsh'
@@ -25,12 +29,16 @@
     state: present
   when: user.ohmyzsh is defined and user.ohmyzsh == true
   become_user: "{{ user.name }}"
+  tags:
+    - always
 
-- name: "[configure-user:{{ user.name }}] Shell:zsh | Check for resources/users/{{ user.name }}/zshrc"
+- name: "configure-user@{{ user.name }} : zsh : check for resources/users/{{ user.name }}/zshrc"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/zshrc"
   register: stat_user_zshrc
+  tags:
+    - always
 
-- name:  "[configure-user:{{ user.name }}] Shell:zsh | Install user configuration"
+- name:  "configure-user@{{ user.name }} : zsh : install user configuration"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/zshrc"
     dest: "{{ user.home }}/.zshrc"
@@ -38,12 +46,16 @@
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
   when: stat_user_zshrc.stat.exists == true
+  tags:
+    - always
 
-- name: "[configure-user:{{ user.name }}] Shell:zsh | Check for resources/users/{{ user.name }}/functions"
+- name: "configure-user@{{ user.name }} : zsh : check for resources/users/{{ user.name }}/functions"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/functions"
   register: stat_user_functions
+  tags:
+    - always
 
-- name:  "[configure-user:{{ user.name }}] Shell:zsh | Install user functions"
+- name:  "configure-user@{{ user.name }} : zsh : install user functions"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/functions/"
     dest: "{{ user.home }}/.zsh.functions"
@@ -51,8 +63,12 @@
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
   when: stat_user_functions.stat.exists == true
+  tags:
+    - always
 
-- name:  "[configure-user:{{ user.name }}] Shell:zsh | Set ZSH as user shell"
+- name:  "configure-user@{{ user.name }} : zsh : set ZSH as user shell"
   user:
     name: "{{ user.name }}"
     shell: /usr/bin/zsh
+  tags:
+    - always

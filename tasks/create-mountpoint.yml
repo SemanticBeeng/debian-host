@@ -1,19 +1,23 @@
 ---
 # tasks file for debian-physical-host/create-mountpoint
-- name: "[configure-mountpoint:{{ mountpoint }}] Create mountpoint '{{ mountpoint }}'"
+- name: "configure-mountpoint@{{ dev }}@{{ mountpoint }} : create mountpoint"
   file:
     path: "{{ mountpoint }}"
     state: directory
+  tags:
+    - always
 
-- name: "[configure-mountpoint:{{ mountpoint }}] Add mountpoint '{{ mountpoint }}' in /etc/fstab"
+- name: "configure-mountpoint@{{ dev }}@{{ mountpoint }} : add mountpoint in /etc/fstab"
   mount:
     path: "{{ mountpoint }}"
     src: "{{ dev }}"
     fstype: "{{ fs }}"
     opts: "{{ opts | default ('defaults')}}"
     state: present
+  tags:
+    - always
 
-- name: "[configure-mountpoint:{{ mountpoint }}] Mount '{{ mountpoint }}'"
+- name: "configure-mountpoint@{{ dev }}@{{ mountpoint }} : mount filesystem"
   mount:
     path: "{{ mountpoint }}"
     src: "{{ dev }}"
@@ -21,6 +25,8 @@
     opts: "{{ opts | default ('defaults') }}"
     state: mounted
   when: automount is defined and automount
+  tags:
+    - always
 
 
 

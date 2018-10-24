@@ -1,0 +1,11 @@
+---
+# tasks file for debian-host/toolbox/install-packages
+- name: "toolbox : Install packages [{{ packages | join (', ') }}]"
+  apt:
+    name: "{{ packages | default([])}}"
+    install_recommends: no
+    autoremove: yes
+    update_cache: yes
+    default_release: "{{ release | default (None)}}"
+  tags:
+    - always

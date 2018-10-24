@@ -1,10 +1,12 @@
 ---
 # tasks file for configure-users/configure-bash
-- name: "[configure-user:{{ user.name }}] Shell:bash | Check for resources/users/{{ user.name }}/bashrc"
+- name: "configure-user@{{ user.name }} : bash : check for resources/users/{{ user.name }}/bashrc"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/bashrc"
   register: stat_user_bashrc
+  tags:
+    - always
 
-- name: "[configure-user:{{ user.name }}] Shell:bash | Install user configuration"
+- name: "configure-user@{{ user.name }} : bash : install user configuration"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/bashrc"
     dest: "{{ user.home }}/.bashrc"
@@ -12,3 +14,5 @@
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
   when: stat_user_bashrc.stat.exists == true
+  tags:
+    - always

@@ -1,53 +1,79 @@
 ---
 # tasks file for debian-host/configure-users
-- name: "[configure-users:{{ user.name }}] Configure user"
+- name: "configure-users@{{ user.name }} : configure user"
   user:
     name: "{{ user.name }}"
     comment: "{{ user.gecos | default ('')}}"
     home: "{{ user.home | default(None)}}"
+  tags:
+    - always
 
-- name: "[configure-users:{{ user.name }}] Set password"
+- name: "configure-users@{{ user.name }} : set password"
   user:
     name: "{{ user.name }}"
     password: "{{ user.password }}"
   when: user.password is defined
+  tags:
+    - always
 
-- name: "[configure-users:{{ user.name }}] Set sudo"
+- name: "configure-users@{{ user.name }} : set sudoers"
   user:
     name: "{{ user.name }}"
     groups: sudo
     append: true
   when: user.sudo is defined and user.sudo == true
+  tags:
+    - always
 
-- name: "[configure-users:{{ user.name }}] Add authorized keys"
+- name: "configure-users@{{ user.name }} : add authorized keys"
   authorized_key:
     user: "{{ user.name }}"
     state: present
     key: "{{ item }}"
   with_items: "{{ user.authorized_keys }}"
   when: user.authorized_keys is defined
+  tags:
+    - always
 
-- name: "[configure-users:{{ user.name }}] Configure {{ user.shell }} as shell"
-  include_tasks: "{{ role_path }}/tasks/configure-users/configure-{{ user.shell }}.yml"
+- name: "debian-host : configure-users@{{ user.name }} : run debian-host/configure-users/configure-{{ user.shell }}"
+  include_role:
+    name: debian-host
+    tasks_from: "configure-users/configure-{{ user.shell }}"
   when: user.shell is defined
+  tags:
+    - always
 
-- name: "[configure-users:{{ user.name }}] Configure {{ user.vcs }} as VCS"
-  include_tasks: "{{ role_path }}/tasks/configure-users/configure-{{ user.vcs }}.yml"
+- name: "debian-host : configure-users@{{ user.name }} : run debian-host/configure-users/configure-{{ user.vcs }}"
+  include_role:
+    name: debian-host
+    tasks_from: "configure-users/configure-{{ user.vcs }}"
   when: user.vcs is defined
+  tags:
+    - always
 
-- name: "[configure-users:{{ user.name }}] Configure {{ user.editor }} as editor"
-  include_tasks: "{{ role_path }}/tasks/configure-users/configure-{{ user.editor }}.yml"
+- name: "debian-host : configure-users@{{ user.name }} : run debian-host/configure-users/configure-{{ user.editor }}"
+  include_role:
+    name: debian-host
+    tasks_from: "configure-users/configure-{{ user.editor }}"
   when: user.editor is defined
+  tags:
+    - always
 
-- name: "[configure-users:{{ user.name }}] Configure Tmux"
-  include_tasks: "{{ role_path }}/tasks/configure-users/configure-tmux.yml"
+- name: "debian-host : configure-users@{{ user.name }} : run debian-host/configure-users/configure-tmux"
+  include_role:
+    name: debian-host
+    tasks_from: "configure-users/configure-tmux"
   when: user.tmux is defined and user.tmux == true
+  tags:
+    - always
 
-- name: "[configure-users:{{ user.name }}] Check for resources/users/{{ user.name }}/bin"
+- name: "configure-users@{{ user.name }} : check for resources/users/{{ user.name }}/bin"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/bin"
   register: stat_user_bin
+  tags:
+    - always
 
-- name:  "[configure-users:{{ user.name }}] Install binaries"
+- name:  "configure-users@{{ user.name }} : install binaries"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/bin/"
     dest: "{{ user.home }}/bin"
@@ -56,3 +82,5 @@
     group: "{{ user.name }}"
     mode: preserve
   when: stat_user_bin.stat.exists == true
+  tags:
+    - always

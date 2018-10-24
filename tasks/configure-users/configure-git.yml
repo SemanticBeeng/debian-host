@@ -1,10 +1,12 @@
 ---
 # tasks file for configure-users/configure-git
-- name: "[configure-user:{{ user.name }}] VCS:git | Check for resources/users/{{ user.name }}/gitconfig"
+- name: "configure-user@{{ user.name }} : git : check for resources/users/{{ user.name }}/gitconfig"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/gitconfig"
   register: stat_user_gitconfig
+  tags:
+    - always
 
-- name: "[configure-user:{{ user.name }}] VCS:git | Install user configuration"
+- name: "configure-user@{{ user.name }} : git : install user configuration"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/gitconfig"
     dest: "{{ user.home }}/.gitconfig"
@@ -12,4 +14,5 @@
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
   when: stat_user_gitconfig.stat.exists == true
-
+  tags:
+    - always

@@ -1,0 +1,9 @@
+---
+# tasks file for debian-host/toolbox/update-system
+- name: "toolbox : Update system"
+  apt:
+    install_recommends: no
+    update_cache: yes
+    upgrade: yes
+  tags:
+    - always

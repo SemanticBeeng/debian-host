@@ -1,24 +1,30 @@
 ---
 # tasks file for configure-users/configure-vim
-- name: "[configure-user:{{ user.name }}] Editor:vim | Install packages"
+- name: "debian-host : configure-user@{{ user.name }} : vim : run debian-host/toolbox/install-packages task"
   include_role:
-    name: toolbox
-    tasks_from: install-packages
+    name: debian-host
+    tasks_from: toolbox/install-packages
   vars:
     packages:
       - vim-nox
+  tags:
+    - always
 
-- name: "[configure-user:{{ user.name }}] Editor:vim | Uninstall useless package vim-tiny"
+- name: "configure-user@{{ user.name }}] : vim : uninstall useless package vim-tiny"
   apt:
     name: vim-tiny
     autoremove: yes
     state: absent
+  tags:
+    - always
 
-- name: "[configure-user:{{ user.name }}] Editor:vim | Check for resources/users/{{ user.name }}/vimrc"
+- name: "configure-user@{{ user.name }}] : vim : check for resources/users/{{ user.name }}/vimrc"
   local_action: stat path="{{ playbook_dir }}/resources/users/{{ user.name }}/vimrc"
   register: stat_user_vimrc
+  tags:
+    - always
 
-- name: "[configure-user:{{ user.name }}] Editor:vim | Install user configuration"
+- name: "configure-user@{{ user.name }} : vim | install user configuration"
   copy:
     src: "{{ playbook_dir }}/resources/users/{{ user.name }}/vimrc"
     dest: "{{ user.home }}/.vimrc"
@@ -26,16 +32,22 @@
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
   when: stat_user_vimrc.stat.exists == true
+  tags:
+    - always
 
-- name: "[configure-user:{{ user.name }}] Editor:vim | Install Vundle for Vim"
+- name: "configure-user@{{ user.name }} : vim : install Vundle for Vim"
   git:
     accept_hostkey: yes
     repo: https://github.com/VundleVim/Vundle.vim.git
     dest: "{{ user.home }}/.vim.bundles/Vundle.vim"
   when: user.vundle is defined and user.vundle == true
   become_user: "{{ user.name }}"
+  tags:
+    - always
 
-- name: "[configure-user:{{ user.name }}] Editor | Initialize Vi IMproved"
+- name: "configure-user@{{ user.name }} : vim : initialize Vi IMproved"
   shell: vim -i NONE -c PluginInstall -c quitall
   when: user.vundle is defined and user.vundle == true
   become_user: "{{ user.name }}"
+  tags:
+    - always

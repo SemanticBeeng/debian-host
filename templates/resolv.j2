@@ -1,5 +1,0 @@
-domain {% for domain in dns.domains %}{{ domain }}{% endfor %}
-search {% for domain in dns.domains %}{{ domain }}{% endfor %}
-{% for server in dns.servers %}
-nameserver {{ server }}
-{% endfor %}
