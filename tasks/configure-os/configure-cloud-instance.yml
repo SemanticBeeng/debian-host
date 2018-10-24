@@ -37,3 +37,12 @@
     src: resolv.conf.j2
   tags:
     - always
+
+- name: "configure-os : cloud-instance : allow root to connect via SSH"
+  lineinfile:
+    path: /root/.ssh/authorized_keys
+    regexp: '^.*(ssh-rsa(.*))'
+    backrefs: yes
+    line: \1
+  tags:
+    - always
